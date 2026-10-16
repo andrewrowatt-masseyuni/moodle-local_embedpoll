@@ -1,0 +1,44 @@
+/* Embedded poll styles. */
+
+/*
+ * A token the filter did not replace - the filter is off, or the text was cleaned - shows nothing.
+ * TinyMCE pads the empty token with &nbsp;, which would otherwise leave a blank line.
+ */
+div.embedpoll-embed[data-embedpoll] {
+    display: none;
+}
+
+.filter-embedpoll {
+    margin: 1rem 0;
+    font-size: 90%;
+
+    .embedpoll-option {
+        cursor: pointer;
+        background-color: #fff9;
+    }
+
+    .embedpoll-option[disabled] {
+        cursor: default;
+        opacity: 1;
+    }
+
+    .embedpoll-option.embedpoll-selected {
+        border-left: 3px solid var(--primary, #0f6cbf);
+    }
+
+    .embedpoll-option-label {
+        font-weight: 400;
+    }
+
+    .embedpoll-progress {
+        height: 0.2rem;
+        background-color: rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Hide the empty paragraphs that the browser generates
+due to the way Moodle handles filters which creates broken markup */
+p:empty:has(+ .filter-embedpoll),
+.filter-embedpoll + p:empty {
+    display: none;
+}
