@@ -82,6 +82,11 @@ A compact poll has no progress bars and no check icons. The chosen option is the
 `aria-pressed` gives the same information to screen readers. Progress bars are left out because
 they compare options only when every option is the same width, and side-by-side buttons are not.
 
+**Results for each option** sets the figure beside each option once results are revealed:
+**Percentage** (the default), **Number of votes**, or **Nothing**. It changes only that figure.
+Progress bars and the total number of votes still show, and a student still sees no results until
+they vote. A screen reader hears the number of votes in words either way ("67% (2 votes)", "2 votes").
+
 The poll appears in the editor exactly as it will on the page, with the results you can see. It
 cannot be voted in there.
 
@@ -157,6 +162,7 @@ A section's key belongs to its course (see *Polls in section summaries*).
 | `embedkey` | Matches the token. Unique per activity, and unique per course among sections and drafts. |
 | `options` | A JSON array of `{id, label}`, in display order. The ids belong to the poll. |
 | `compact` | 1 to show the options side by side, on one line. Set by the form's **Compact** box. |
+| `stats` | What each option shows once results are revealed: `percent`, `count` or `none` (`poll::STATS`). |
 
 `local_embedpoll_vote` holds one row per user per poll: `optionid` names the chosen option by its
 id. `poll::merge_options()` is the only place that assigns option ids:
@@ -332,6 +338,7 @@ php admin/tool/behat/cli/run.php --tags=@tiny_embedpoll
   * polls in labels and book chapters;
   * voting and changing a vote;
   * a compact poll;
+  * a number of votes, or nothing, beside each option;
   * results hidden from students and shown to teachers;
   * identical polls kept separate;
   * a section summary;

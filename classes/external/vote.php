@@ -88,6 +88,8 @@ class vote extends external_api {
             'canviewresults' => new external_value(PARAM_BOOL, 'Whether the user always sees results'),
             'hasvoted' => new external_value(PARAM_BOOL, 'Whether the user has voted'),
             'showresults' => new external_value(PARAM_BOOL, 'Whether results are revealed to the user'),
+            'showpercent' => new external_value(PARAM_BOOL, 'Whether each option shows its percentage'),
+            'showcount' => new external_value(PARAM_BOOL, 'Whether each option shows its number of votes'),
             'total' => new external_value(PARAM_INT, 'Total number of votes'),
             'totaltext' => new external_value(PARAM_TEXT, 'Localised, pluralised total-votes label'),
             'hasvotes' => new external_value(PARAM_BOOL, 'Whether there is at least one vote'),
@@ -96,6 +98,7 @@ class vote extends external_api {
                     'optionid' => new external_value(PARAM_INT, 'The option\'s id'),
                     'label' => new external_value(PARAM_RAW, 'Option label'),
                     'count' => new external_value(PARAM_INT, 'Votes for this option'),
+                    'counttext' => new external_value(PARAM_TEXT, 'Localised, pluralised votes for this option'),
                     'percent' => new external_value(PARAM_INT, 'Percentage of votes for this option'),
                     'selected' => new external_value(PARAM_BOOL, 'Whether this is the user\'s choice'),
                 ])

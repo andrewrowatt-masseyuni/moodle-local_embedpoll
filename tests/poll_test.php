@@ -197,6 +197,31 @@ final class poll_test extends \advanced_testcase {
     }
 
     /**
+     * Each option shows its percentage, its number of votes, or neither, as the poll says; and
+     * nothing at all before the results are revealed.
+     */
+    public function test_stats_are_exported(): void {
+        $this->resetAfterTest();
+        [, $row, $student] = $this->make_poll();
+        $this->assertFalse(poll::export_for_template($row, (int)$student->id)['showpercent']);
+        poll::record_vote($row, (int)$student->id, $this->optionid($row, 'Red'));
+
+        $shown = [];
+        foreach (poll::STATS as $stats) {
+            $row->stats = $stats;
+            $data = poll::export_for_template($row, (int)$student->id);
+            $shown[$stats] = [$data['showpercent'], $data['showcount']];
+        }
+
+        $this->assertSame([
+            poll::STATS_PERCENT => [true, false],
+            poll::STATS_COUNT => [false, true],
+            poll::STATS_NONE => [false, false],
+        ], $shown);
+        $this->assertSame(['1 vote', '0 votes', '0 votes'], array_column($data['items'], 'counttext'));
+    }
+
+    /**
      * The editor's preview can never be voted in, whoever looks at it.
      */
     public function test_preview_cannot_be_voted_in(): void {

@@ -103,6 +103,31 @@ final class embed_form_test extends \advanced_testcase {
         $row = $DB->get_record('local_embedpoll', ['cmid' => $context->instanceid, 'embedkey' => $key], '*', MUST_EXIST);
         $this->assertSame(['Red', 'Green', 'Blue'], array_column(poll::options($row), 'label'));
         $this->assertSame(0, (int)$row->compact);
+        $this->assertSame(poll::STATS_PERCENT, $row->stats);
+    }
+
+    /**
+     * "Results for each option" is saved, and the poll reopens with it chosen.
+     */
+    public function test_stats(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        [, $context] = $this->setup_book();
+
+        $result = $this->submit([
+            'contextid' => $context->id,
+            'key' => '',
+            'options' => "Yes\nNo",
+            'stats' => poll::STATS_NONE,
+        ]);
+
+        $key = json_decode($result['data'])->key;
+        $this->assertSame(poll::STATS_NONE, $DB->get_field('local_embedpoll', 'stats', ['embedkey' => $key]));
+        $this->assertMatchesRegularExpression(
+            '~<option(?=[^>]*value="none")(?=[^>]*selected)[^>]*>~',
+            $this->open(['contextid' => $context->id, 'key' => $key])
+        );
     }
 
     /**

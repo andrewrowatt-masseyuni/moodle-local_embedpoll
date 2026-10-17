@@ -107,14 +107,19 @@ final class backup_test extends \advanced_testcase {
     /**
      * A book with two polls, one with two votes.
      *
-     * @return array [course, book, voted row, other (compact) row]
+     * @return array [course, book, voted row, other row (compact, showing counts)]
      */
     private function make_book(): array {
         $course = $this->getDataGenerator()->create_course();
         $book = $this->getDataGenerator()->create_module('book', ['course' => $course->id]);
 
         $voted = $this->generator()->create_poll(['cmid' => $book->cmid, 'options' => ['Yes', 'No']]);
-        $other = $this->generator()->create_poll(['cmid' => $book->cmid, 'options' => ['Red', 'Green'], 'compact' => 1]);
+        $other = $this->generator()->create_poll([
+            'cmid' => $book->cmid,
+            'options' => ['Red', 'Green'],
+            'compact' => 1,
+            'stats' => poll::STATS_COUNT,
+        ]);
         foreach (['Yes', 'No'] as $label) {
             $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
             $this->generator()->create_vote($voted, (int)$student->id, $label);
@@ -135,7 +140,7 @@ final class backup_test extends \advanced_testcase {
         $books = get_fast_modinfo($courseid)->get_instances_of('book');
         $cm = reset($books);
 
-        return $DB->get_records('local_embedpoll', ['cmid' => $cm->id], '', 'embedkey, id, courseid, options, compact');
+        return $DB->get_records('local_embedpoll', ['cmid' => $cm->id], '', 'embedkey, id, courseid, options, compact, stats');
     }
 
     /**
@@ -158,6 +163,8 @@ final class backup_test extends \advanced_testcase {
         $this->assertSame($other->options, $rows[$other->embedkey]->options);
         $this->assertSame(0, (int)$rows[$voted->embedkey]->compact);
         $this->assertSame(1, (int)$rows[$other->embedkey]->compact);
+        $this->assertSame(poll::STATS_PERCENT, $rows[$voted->embedkey]->stats);
+        $this->assertSame(poll::STATS_COUNT, $rows[$other->embedkey]->stats);
         $this->assertSame($newcourseid, (int)$rows[$voted->embedkey]->courseid);
         $this->assertSame(0, $DB->count_records('local_embedpoll_vote', ['pollid' => $rows[$voted->embedkey]->id]));
 

@@ -110,6 +110,27 @@ final class api_test extends \advanced_testcase {
     }
 
     /**
+     * A poll shows percentages unless it is saved otherwise, and refuses a setting it does not know.
+     */
+    public function test_save_stats(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $context = \context_module::instance($page->cmid);
+
+        $key = api::save_embed($context, null, ['Yes', 'No']);
+        $this->assertSame(poll::STATS_PERCENT, $DB->get_field('local_embedpoll', 'stats', ['embedkey' => $key]));
+
+        api::save_embed($context, $key, ['Yes', 'No'], 0, false, poll::STATS_COUNT);
+        $this->assertSame(poll::STATS_COUNT, $DB->get_field('local_embedpoll', 'stats', ['embedkey' => $key]));
+
+        $this->expectException(\invalid_parameter_exception::class);
+        api::save_embed($context, $key, ['Yes', 'No'], 0, false, 'pie');
+    }
+
+    /**
      * Votes follow an option's text: reordering and adding keep them, rewording and removing drop
      * only that option's.
      */

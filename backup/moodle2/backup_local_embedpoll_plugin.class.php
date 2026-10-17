@@ -74,6 +74,7 @@ class backup_local_embedpoll_plugin extends backup_local_plugin {
             'embedkey',
             'options',
             'compact',
+            'stats',
             'timecreated',
             'timemodified',
         ]);

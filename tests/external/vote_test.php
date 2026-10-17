@@ -54,6 +54,8 @@ final class vote_test extends \externallib_advanced_testcase {
 
         $this->assertSame((int)$row->id, $result['pollid']);
         $this->assertFalse($result['compact']);
+        $this->assertTrue($result['showpercent']);
+        $this->assertFalse($result['showcount']);
         $this->assertTrue($result['hasvoted']);
         $this->assertTrue($result['showresults']);
         $this->assertSame(1, $result['total']);

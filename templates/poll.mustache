@@ -24,6 +24,10 @@
     It has no progress bars and no check icons: the chosen option is the tinted button, and
     aria-pressed says so to assistive technology.
 
+    Once results are revealed, each option shows its percentage (showpercent), its number of votes
+    (showcount), or neither, as the poll's stats setting says. Neither affects the progress bars or
+    the total.
+
     Context variables required for this template:
     * pollid - Poll id
     * contextid - Moodle context id
@@ -31,19 +35,22 @@
     * canvote - Whether the user may cast/change a vote
     * canviewresults - Whether the user always sees results
     * showresults - Whether results are revealed to this user
+    * showpercent - Whether each option shows its percentage
+    * showcount - Whether each option shows its number of votes
     * total - Total number of votes
     * totaltext - Localised, pluralised total-votes label (e.g. "1 vote", "5 votes")
     * hasvotes - Whether there is at least one vote
-    * items - Array of {optionid, label, count, percent, selected}
+    * items - Array of {optionid, label, count, counttext, percent, selected}
 
     Example context (json):
     {
         "pollid": 7, "contextid": 42, "compact": false, "canvote": true, "canviewresults": false,
-        "hasvoted": true, "showresults": true, "total": 3, "totaltext": "3 votes", "hasvotes": true,
+        "hasvoted": true, "showresults": true, "showpercent": true, "showcount": false,
+        "total": 3, "totaltext": "3 votes", "hasvotes": true,
         "items": [
-            {"optionid": 1, "label": "Red", "count": 2, "percent": 67, "selected": true},
-            {"optionid": 2, "label": "Green", "count": 1, "percent": 33, "selected": false},
-            {"optionid": 3, "label": "Blue", "count": 0, "percent": 0, "selected": false}
+            {"optionid": 1, "label": "Red", "count": 2, "counttext": "2 votes", "percent": 67, "selected": true},
+            {"optionid": 2, "label": "Green", "count": 1, "counttext": "1 vote", "percent": 33, "selected": false},
+            {"optionid": 3, "label": "Blue", "count": 0, "counttext": "0 votes", "percent": 0, "selected": false}
         ]
     }
 }}
@@ -58,9 +65,12 @@
                 aria-pressed="{{#selected}}true{{/selected}}{{^selected}}false{{/selected}}"
                 {{^canvote}}disabled{{/canvote}}>
             <span class="embedpoll-option-label">{{label}}</span>
-            {{#showresults}}
-            <span class="embedpoll-option-stat ml-1">{{percent}}%<span class="sr-only"> ({{count}})</span></span>
-            {{/showresults}}
+            {{#showpercent}}
+            <span class="embedpoll-option-stat ml-1">{{percent}}%<span class="sr-only"> ({{counttext}})</span></span>
+            {{/showpercent}}
+            {{#showcount}}
+            <span class="embedpoll-option-stat ml-1"><span aria-hidden="true">{{count}}</span><span class="sr-only">{{counttext}}</span></span>
+            {{/showcount}}
         </button>
         {{/items}}
     </div>
@@ -80,9 +90,12 @@
                     {{^selected}}<i class="fa-regular fa-circle embedpoll-option-bullet mr-2" aria-hidden="true"></i>{{/selected}}
                     {{label}}
                 </span>
-                {{#showresults}}
-                <span class="embedpoll-option-stat text-muted ml-2">{{percent}}%<span class="sr-only"> ({{count}})</span></span>
-                {{/showresults}}
+                {{#showpercent}}
+                <span class="embedpoll-option-stat text-muted ml-2">{{percent}}%<span class="sr-only"> ({{counttext}})</span></span>
+                {{/showpercent}}
+                {{#showcount}}
+                <span class="embedpoll-option-stat text-muted ml-2"><span aria-hidden="true">{{count}}</span><span class="sr-only">{{counttext}}</span></span>
+                {{/showcount}}
             </span>
             {{#showresults}}
             <span class="progress embedpoll-progress mt-2" aria-hidden="true">

@@ -95,3 +95,20 @@ Feature: Polls in a text and media area
     And I should see "1 vote"
     And "span.progress-bar" "css_element" should not exist
     And ".filter-embedpoll i.fa-circle-check" "css_element" should not exist
+
+  @javascript
+  Scenario: A poll shows a percentage, a number of votes, or nothing beside each option
+    Given the following "activities" exist:
+      | activity | name | course | idnumber | intro                                                                                                                                                                 | introformat |
+      | label    | L1   | C1     | label1   | <p>Counts</p><div class="embedpoll-embed" data-embedpoll="aaaaaaaaaaaaaaaa"></div><p>Nothing</p><div class="embedpoll-embed" data-embedpoll="bbbbbbbbbbbbbbbb"></div> | 1           |
+    And the following "local_embedpoll > polls" exist:
+      | activity | embedkey         | options   | stats |
+      | label1   | aaaaaaaaaaaaaaaa | Yes, No   | count |
+      | label1   | bbbbbbbbbbbbbbbb | Red, Blue | none  |
+    When I am on the "C1" "Course" page logged in as "student1"
+    And I click on "Yes" "button"
+    And I click on "Red" "button"
+    Then "//button[contains(.,'Yes')]//span[contains(@class,'embedpoll-option-stat')][contains(.,'1 vote')]" "xpath_element" should exist
+    And "(//div[contains(@class,'filter-embedpoll')])[1]//span[contains(@class,'embedpoll-option-stat')][contains(.,'%')]" "xpath_element" should not exist
+    And "(//div[contains(@class,'filter-embedpoll')])[2]//span[contains(@class,'embedpoll-option-stat')]" "xpath_element" should not exist
+    And "(//div[contains(@class,'filter-embedpoll')])[2]//span[contains(@class,'progress-bar')]" "xpath_element" should exist

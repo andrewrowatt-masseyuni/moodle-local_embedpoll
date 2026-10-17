@@ -30,7 +30,8 @@ class local_embedpoll_generator extends component_generator_base {
      * Create a poll directly, without going through an editor.
      *
      * @param array|stdClass $record Needs cmid, sectionid, or courseid for a draft. Optional:
-     *     embedkey, compact, and options - an array of labels, or a string of them separated by commas.
+     *     embedkey, compact, stats, and options - an array of labels, or a string of them separated
+     *     by commas.
      * @return stdClass The new row.
      */
     public function create_poll($record): stdClass {
@@ -56,6 +57,7 @@ class local_embedpoll_generator extends component_generator_base {
             'sectionid' => 0,
             'embedkey' => token::new_key(),
             'compact' => 0,
+            'stats' => poll::STATS_PERCENT,
             'timecreated' => $now,
             'timemodified' => $now,
         ], $record, ['options' => poll::encode_options($options)]);

@@ -51,8 +51,20 @@ class poll {
     /** @var int The longest an option's label may be, in characters. */
     public const MAXLENGTH = 255;
 
+    /** @var string Show each option's share of the votes, as a percentage. */
+    public const STATS_PERCENT = 'percent';
+
+    /** @var string Show how many votes each option has. */
+    public const STATS_COUNT = 'count';
+
+    /** @var string Show no figure beside each option. */
+    public const STATS_NONE = 'none';
+
+    /** @var string[] What a poll may show beside each option once results are revealed. */
+    public const STATS = [self::STATS_PERCENT, self::STATS_COUNT, self::STATS_NONE];
+
     /** @var string The columns every lookup returns. */
-    protected const FIELDS = 'id, courseid, cmid, sectionid, embedkey, options, compact';
+    protected const FIELDS = 'id, courseid, cmid, sectionid, embedkey, options, compact, stats';
 
     /**
      * Rows keyed by course id, then 'cms' => cm id => key, and 'sections' => key.
@@ -291,7 +303,10 @@ class poll {
      * The editor's preview shows the poll as the page shows it to the same user, but can never be
      * voted in: its buttons are disabled, which also keeps them out of the tab order.
      *
-     * A compact poll shows its options side by side, on one line, rather than one per line.
+     * A compact poll shows its options side by side, on one line, rather than one per line. Once
+     * results are revealed, each option shows its percentage, its number of votes, or neither, as
+     * the poll's stats setting says. Neither changes what is sent: the progress bars and the total
+     * still need the tally.
      *
      * @param \stdClass $row A local_embedpoll row.
      * @param int $userid The user.
@@ -312,6 +327,7 @@ class poll {
         $myvote = $hasvoted ? (int)$voterecord->optionid : 0;
 
         $showresults = $hasvoted || $canviewresults;
+        $stats = $showresults ? $row->stats : self::STATS_NONE;
 
         // Aggregate the tally, ignoring any votes for options the poll no longer has.
         $counts = array_fill_keys(array_column($options, 'id'), 0);
@@ -340,6 +356,7 @@ class poll {
                 'optionid' => $option['id'],
                 'label' => $option['label'],
                 'count' => $count,
+                'counttext' => self::votes_text($count),
                 'percent' => $total > 0 ? (int)round(($count / $total) * 100) : 0,
                 'selected' => $option['id'] === $myvote,
             ];
@@ -353,10 +370,22 @@ class poll {
             'canviewresults' => $canviewresults,
             'hasvoted' => $hasvoted,
             'showresults' => $showresults,
+            'showpercent' => $stats === self::STATS_PERCENT,
+            'showcount' => $stats === self::STATS_COUNT,
             'total' => $total,
-            'totaltext' => get_string($total === 1 ? 'votecount' : 'votecountplural', 'local_embedpoll', $total),
+            'totaltext' => self::votes_text($total),
             'hasvotes' => $total > 0,
             'items' => $items,
         ];
+    }
+
+    /**
+     * A number of votes, in words: "1 vote", "5 votes".
+     *
+     * @param int $count The number of votes.
+     * @return string
+     */
+    protected static function votes_text(int $count): string {
+        return get_string($count === 1 ? 'votecount' : 'votecountplural', 'local_embedpoll', $count);
     }
 }

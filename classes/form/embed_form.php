@@ -28,7 +28,8 @@ use local_embedpoll\poll;
  * The options are written one per line. An option keeps its votes for as long as its text is
  * unchanged, wherever it moves to; rewording or removing an option discards the votes cast for it.
  * A poll that already has votes opens with a notice saying so. Ticking "Compact" shows the options
- * side by side, on one line, rather than one per line.
+ * side by side, on one line, rather than one per line. "Results for each option" picks what each
+ * option shows once results are revealed: its percentage, its number of votes, or nothing.
  *
  * Arguments: contextid (the editor's context), and optionally sectionid (the section whose summary
  * is being edited, in a course context) and key (the poll being edited).
@@ -138,6 +139,13 @@ class embed_form extends dynamic_form {
             get_string('compact_inlinehelp', 'local_embedpoll')
         );
         $mform->setDefault('compact', 0);
+
+        $stats = [];
+        foreach (poll::STATS as $value) {
+            $stats[$value] = get_string('stats_' . $value, 'local_embedpoll');
+        }
+        $mform->addElement('select', 'stats', get_string('stats', 'local_embedpoll'), $stats);
+        $mform->setDefault('stats', poll::STATS_PERCENT);
     }
 
     /**
@@ -170,6 +178,7 @@ class embed_form extends dynamic_form {
             'key' => $row ? $row->embedkey : '',
             'options' => $row ? implode("\n", array_column(poll::options($row), 'label')) : '',
             'compact' => $row ? (int)$row->compact : 0,
+            'stats' => $row ? $row->stats : poll::STATS_PERCENT,
         ]);
     }
 
@@ -186,7 +195,8 @@ class embed_form extends dynamic_form {
             $data->key !== '' ? $data->key : null,
             poll::labels_from_text((string)$data->options),
             $this->get_sectionid(),
-            !empty($data->compact)
+            !empty($data->compact),
+            $data->stats
         );
 
         return ['key' => $key];

@@ -160,21 +160,26 @@ class api {
      * @param string[] $labels The options, trimmed and in display order.
      * @param int $sectionid The section whose summary is being edited, or 0.
      * @param bool $compact Whether the options are shown side by side, on one line.
+     * @param string $stats What each option shows once results are revealed: one of poll::STATS.
      * @return string The poll's key.
-     * @throws \invalid_parameter_exception If the labels are not a valid poll.
+     * @throws \invalid_parameter_exception If the labels are not a valid poll, or $stats is not a setting.
      */
     public static function save_embed(
         \context $context,
         ?string $key,
         array $labels,
         int $sectionid = 0,
-        bool $compact = false
+        bool $compact = false,
+        string $stats = poll::STATS_PERCENT
     ): string {
         global $DB;
 
         $labels = array_values($labels);
         if ($error = self::label_error($labels)) {
             throw new \invalid_parameter_exception($error);
+        }
+        if (!in_array($stats, poll::STATS, true)) {
+            throw new \invalid_parameter_exception('Unknown stats setting.');
         }
 
         [$courseid, $cmid, $sectionid] = self::embed_target($context, $sectionid);
@@ -207,6 +212,7 @@ class api {
             'id' => $row->id,
             'options' => poll::encode_options($options),
             'compact' => (int)$compact,
+            'stats' => $stats,
             'timemodified' => $now,
         ]);
 
