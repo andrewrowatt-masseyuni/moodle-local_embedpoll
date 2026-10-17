@@ -89,6 +89,27 @@ final class api_test extends \advanced_testcase {
     }
 
     /**
+     * A poll is compact only when it is saved as compact.
+     */
+    public function test_save_compact(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $context = \context_module::instance($page->cmid);
+
+        $key = api::save_embed($context, null, ['Yes', 'No']);
+        $this->assertSame(0, (int)$DB->get_field('local_embedpoll', 'compact', ['embedkey' => $key]));
+
+        api::save_embed($context, $key, ['Yes', 'No'], 0, true);
+        $this->assertSame(1, (int)$DB->get_field('local_embedpoll', 'compact', ['embedkey' => $key]));
+
+        api::save_embed($context, $key, ['Yes', 'No']);
+        $this->assertSame(0, (int)$DB->get_field('local_embedpoll', 'compact', ['embedkey' => $key]));
+    }
+
+    /**
      * Votes follow an option's text: reordering and adding keep them, rewording and removing drop
      * only that option's.
      */

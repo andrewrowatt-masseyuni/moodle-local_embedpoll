@@ -73,6 +73,7 @@ class backup_local_embedpoll_plugin extends backup_local_plugin {
         $poll = new backup_nested_element('poll', ['id'], [
             'embedkey',
             'options',
+            'compact',
             'timecreated',
             'timemodified',
         ]);

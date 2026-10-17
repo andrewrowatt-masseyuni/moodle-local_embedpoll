@@ -27,7 +27,8 @@ use local_embedpoll\poll;
  *
  * The options are written one per line. An option keeps its votes for as long as its text is
  * unchanged, wherever it moves to; rewording or removing an option discards the votes cast for it.
- * A poll that already has votes opens with a notice saying so.
+ * A poll that already has votes opens with a notice saying so. Ticking "Compact" shows the options
+ * side by side, on one line, rather than one per line.
  *
  * Arguments: contextid (the editor's context), and optionally sectionid (the section whose summary
  * is being edited, in a course context) and key (the poll being edited).
@@ -129,6 +130,14 @@ class embed_form extends dynamic_form {
         $mform->addElement('textarea', 'options', $label, ['rows' => 8, 'cols' => 50]);
         $mform->setType('options', PARAM_TEXT);
         $mform->addRule('options', null, 'required', null, 'client');
+
+        $mform->addElement(
+            'advcheckbox',
+            'compact',
+            get_string('compact', 'local_embedpoll'),
+            get_string('compact_inlinehelp', 'local_embedpoll')
+        );
+        $mform->setDefault('compact', 0);
     }
 
     /**
@@ -160,6 +169,7 @@ class embed_form extends dynamic_form {
             'sectionid' => $this->get_sectionid(),
             'key' => $row ? $row->embedkey : '',
             'options' => $row ? implode("\n", array_column(poll::options($row), 'label')) : '',
+            'compact' => $row ? (int)$row->compact : 0,
         ]);
     }
 
@@ -175,7 +185,8 @@ class embed_form extends dynamic_form {
             $this->get_context_for_dynamic_submission(),
             $data->key !== '' ? $data->key : null,
             poll::labels_from_text((string)$data->options),
-            $this->get_sectionid()
+            $this->get_sectionid(),
+            !empty($data->compact)
         );
 
         return ['key' => $key];

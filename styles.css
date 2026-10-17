@@ -34,6 +34,28 @@ div.embedpoll-embed[data-embedpoll] {
         height: 0.2rem;
         background-color: rgba(0, 0, 0, 0.08);
     }
+
+    /* Options side by side, on one line. */
+    &.embedpoll-compact {
+        .embedpoll-options {
+            gap: 0.5rem;
+        }
+
+        .embedpoll-option {
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            font-size: inherit;
+        }
+
+        .embedpoll-option:not([disabled]):not(.embedpoll-selected):hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* With no check icon, the tint alone marks the chosen option. */
+        .embedpoll-option.embedpoll-selected {
+            border: 1px solid var(--primary, #0f6cbf);
+            background-color: color-mix(in srgb, var(--primary, #0f6cbf) 15%, transparent);
+        }
+    }
 }
 
 /* Hide the empty paragraphs that the browser generates

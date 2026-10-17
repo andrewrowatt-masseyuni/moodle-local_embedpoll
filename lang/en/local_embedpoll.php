@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['compact'] = 'Compact';
+$string['compact_inlinehelp'] = 'Show the options side by side, on one line';
 $string['embedpoll:manage'] = 'Add and edit embedded polls';
 $string['embedpoll:viewresults'] = 'Always view embedded poll results';
 $string['embedpoll:vote'] = 'Vote in an embedded poll';

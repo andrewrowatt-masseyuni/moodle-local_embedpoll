@@ -75,6 +75,13 @@ one per line, in the order they should appear, then save.
 * Options must be distinct; options that differ only in case count as the same.
 * Each option can be up to 255 characters long.
 
+Tick **Compact** to show the options side by side, on one line, rather than one per line. They
+wrap onto a second line only when they do not fit. Polls are not compact by default.
+
+A compact poll has no progress bars and no check icons. The chosen option is the tinted button, and
+`aria-pressed` gives the same information to screen readers. Progress bars are left out because
+they compare options only when every option is the same width, and side-by-side buttons are not.
+
 The poll appears in the editor exactly as it will on the page, with the results you can see. It
 cannot be voted in there.
 
@@ -149,6 +156,7 @@ A section's key belongs to its course (see *Polls in section summaries*).
 | `sectionid` | The section whose summary holds the poll, with `cmid = 0`. It is 0 for an activity's poll and for a draft, so a draft is `cmid = 0 AND sectionid = 0`. |
 | `embedkey` | Matches the token. Unique per activity, and unique per course among sections and drafts. |
 | `options` | A JSON array of `{id, label}`, in display order. The ids belong to the poll. |
+| `compact` | 1 to show the options side by side, on one line. Set by the form's **Compact** box. |
 
 `local_embedpoll_vote` holds one row per user per poll: `optionid` names the chosen option by its
 id. `poll::merge_options()` is the only place that assigns option ids:
@@ -323,6 +331,7 @@ php admin/tool/behat/cli/run.php --tags=@tiny_embedpoll
 * Pages (`local_embedpoll`):
   * polls in labels and book chapters;
   * voting and changing a vote;
+  * a compact poll;
   * results hidden from students and shown to teachers;
   * identical polls kept separate;
   * a section summary;

@@ -102,6 +102,27 @@ final class embed_form_test extends \advanced_testcase {
         $key = json_decode($result['data'])->key;
         $row = $DB->get_record('local_embedpoll', ['cmid' => $context->instanceid, 'embedkey' => $key], '*', MUST_EXIST);
         $this->assertSame(['Red', 'Green', 'Blue'], array_column(poll::options($row), 'label'));
+        $this->assertSame(0, (int)$row->compact);
+    }
+
+    /**
+     * "Compact" starts unticked; ticked, it saves the poll as compact, and the poll reopens with
+     * it ticked.
+     */
+    public function test_compact(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        [, $context] = $this->setup_book();
+        $ticked = '~<input(?=[^>]*name="compact")(?=[^>]*type="checkbox")(?=[^>]*checked)[^>]*>~';
+
+        $this->assertDoesNotMatchRegularExpression($ticked, $this->open(['contextid' => $context->id]));
+
+        $result = $this->submit(['contextid' => $context->id, 'key' => '', 'options' => "Yes\nNo", 'compact' => 1]);
+
+        $key = json_decode($result['data'])->key;
+        $this->assertSame(1, (int)$DB->get_field('local_embedpoll', 'compact', ['embedkey' => $key]));
+        $this->assertMatchesRegularExpression($ticked, $this->open(['contextid' => $context->id, 'key' => $key]));
     }
 
     /**

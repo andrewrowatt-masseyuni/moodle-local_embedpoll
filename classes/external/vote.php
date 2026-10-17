@@ -83,6 +83,7 @@ class vote extends external_api {
         return new external_single_structure([
             'pollid' => new external_value(PARAM_INT, 'Poll id'),
             'contextid' => new external_value(PARAM_INT, 'Context id'),
+            'compact' => new external_value(PARAM_BOOL, 'Whether the options are shown on one line'),
             'canvote' => new external_value(PARAM_BOOL, 'Whether the user may vote'),
             'canviewresults' => new external_value(PARAM_BOOL, 'Whether the user always sees results'),
             'hasvoted' => new external_value(PARAM_BOOL, 'Whether the user has voted'),

@@ -159,10 +159,17 @@ class api {
      * @param string|null $key The poll to update, or null for a new one.
      * @param string[] $labels The options, trimmed and in display order.
      * @param int $sectionid The section whose summary is being edited, or 0.
+     * @param bool $compact Whether the options are shown side by side, on one line.
      * @return string The poll's key.
      * @throws \invalid_parameter_exception If the labels are not a valid poll.
      */
-    public static function save_embed(\context $context, ?string $key, array $labels, int $sectionid = 0): string {
+    public static function save_embed(
+        \context $context,
+        ?string $key,
+        array $labels,
+        int $sectionid = 0,
+        bool $compact = false
+    ): string {
         global $DB;
 
         $labels = array_values($labels);
@@ -199,6 +206,7 @@ class api {
         $DB->update_record('local_embedpoll', (object)[
             'id' => $row->id,
             'options' => poll::encode_options($options),
+            'compact' => (int)$compact,
             'timemodified' => $now,
         ]);
 

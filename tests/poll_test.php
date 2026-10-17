@@ -180,6 +180,23 @@ final class poll_test extends \advanced_testcase {
     }
 
     /**
+     * A poll shows its options one per line unless it is compact.
+     */
+    public function test_compact_is_exported(): void {
+        $this->resetAfterTest();
+        [$course, $row, $student] = $this->make_poll();
+        $compact = $this->getDataGenerator()->get_plugin_generator('local_embedpoll')->create_poll([
+            'cmid' => $row->cmid,
+            'compact' => 1,
+        ]);
+
+        $polls = poll::for_cm((int)$course->id, (int)$row->cmid);
+
+        $this->assertFalse(poll::export_for_template($polls[$row->embedkey], (int)$student->id)['compact']);
+        $this->assertTrue(poll::export_for_template($polls[$compact->embedkey], (int)$student->id)['compact']);
+    }
+
+    /**
      * The editor's preview can never be voted in, whoever looks at it.
      */
     public function test_preview_cannot_be_voted_in(): void {

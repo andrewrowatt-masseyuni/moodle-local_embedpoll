@@ -12,6 +12,7 @@
         <FIELD NAME="sectionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The section whose summary holds the poll, with cmid 0. 0 for an activity's poll, or a draft."/>
         <FIELD NAME="embedkey" TYPE="char" LENGTH="16" NOTNULL="true" SEQUENCE="false" COMMENT="16 hex characters, matching the token in the text."/>
         <FIELD NAME="options" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="JSON array of {id, label} in display order. The ids are the poll's own, and votes name them."/>
+        <FIELD NAME="compact" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 to show the options side by side, on one line."/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>

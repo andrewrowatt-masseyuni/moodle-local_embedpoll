@@ -52,7 +52,7 @@ class poll {
     public const MAXLENGTH = 255;
 
     /** @var string The columns every lookup returns. */
-    protected const FIELDS = 'id, courseid, cmid, sectionid, embedkey, options';
+    protected const FIELDS = 'id, courseid, cmid, sectionid, embedkey, options, compact';
 
     /**
      * Rows keyed by course id, then 'cms' => cm id => key, and 'sections' => key.
@@ -291,6 +291,8 @@ class poll {
      * The editor's preview shows the poll as the page shows it to the same user, but can never be
      * voted in: its buttons are disabled, which also keeps them out of the tab order.
      *
+     * A compact poll shows its options side by side, on one line, rather than one per line.
+     *
      * @param \stdClass $row A local_embedpoll row.
      * @param int $userid The user.
      * @param bool $preview For the editor's preview rather than the page.
@@ -346,6 +348,7 @@ class poll {
         return [
             'pollid' => (int)$row->id,
             'contextid' => (int)$context->id,
+            'compact' => (bool)$row->compact,
             'canvote' => $canvote,
             'canviewresults' => $canviewresults,
             'hasvoted' => $hasvoted,

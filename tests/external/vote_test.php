@@ -53,6 +53,7 @@ final class vote_test extends \externallib_advanced_testcase {
         $result = $this->call_vote((int)$row->id, $this->optionid($row, 'Green'));
 
         $this->assertSame((int)$row->id, $result['pollid']);
+        $this->assertFalse($result['compact']);
         $this->assertTrue($result['hasvoted']);
         $this->assertTrue($result['showresults']);
         $this->assertSame(1, $result['total']);

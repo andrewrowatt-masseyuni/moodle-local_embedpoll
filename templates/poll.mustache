@@ -20,9 +20,14 @@
     Renders an embedded poll: on the page, interactive; in the editor's preview, with its buttons
     disabled.
 
+    A compact poll puts its options side by side, on one line, wrapping only when they do not fit.
+    It has no progress bars and no check icons: the chosen option is the tinted button, and
+    aria-pressed says so to assistive technology.
+
     Context variables required for this template:
     * pollid - Poll id
     * contextid - Moodle context id
+    * compact - Whether the options are shown side by side, on one line
     * canvote - Whether the user may cast/change a vote
     * canviewresults - Whether the user always sees results
     * showresults - Whether results are revealed to this user
@@ -33,7 +38,7 @@
 
     Example context (json):
     {
-        "pollid": 7, "contextid": 42, "canvote": true, "canviewresults": false,
+        "pollid": 7, "contextid": 42, "compact": false, "canvote": true, "canviewresults": false,
         "hasvoted": true, "showresults": true, "total": 3, "totaltext": "3 votes", "hasvotes": true,
         "items": [
             {"optionid": 1, "label": "Red", "count": 2, "percent": 67, "selected": true},
@@ -42,7 +47,25 @@
         ]
     }
 }}
-<div class="filter-embedpoll" data-region="filter-embedpoll" data-pollid="{{pollid}}" data-contextid="{{contextid}}">
+<div class="filter-embedpoll{{#compact}} embedpoll-compact{{/compact}}" data-region="filter-embedpoll" data-pollid="{{pollid}}" data-contextid="{{contextid}}">
+    {{#compact}}
+    <div class="d-flex flex-wrap embedpoll-options" role="group" aria-label="{{#str}}polloptions, local_embedpoll{{/str}}">
+        {{#items}}
+        <button type="button"
+                class="btn embedpoll-option{{#selected}} embedpoll-selected{{/selected}}"
+                data-action="poll-vote"
+                data-optionid="{{optionid}}"
+                aria-pressed="{{#selected}}true{{/selected}}{{^selected}}false{{/selected}}"
+                {{^canvote}}disabled{{/canvote}}>
+            <span class="embedpoll-option-label">{{label}}</span>
+            {{#showresults}}
+            <span class="embedpoll-option-stat ml-1">{{percent}}%<span class="sr-only"> ({{count}})</span></span>
+            {{/showresults}}
+        </button>
+        {{/items}}
+    </div>
+    {{/compact}}
+    {{^compact}}
     <div class="list-group embedpoll-options" role="group" aria-label="{{#str}}polloptions, local_embedpoll{{/str}}">
         {{#items}}
         <button type="button"
@@ -70,6 +93,7 @@
         </button>
         {{/items}}
     </div>
+    {{/compact}}
     {{#showresults}}
     <p class="embedpoll-total text-muted small mt-2 mb-0">
         {{#hasvotes}}<span data-region="embedpoll-total">{{totaltext}}</span>{{/hasvotes}}
