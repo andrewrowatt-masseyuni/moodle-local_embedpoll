@@ -31,9 +31,8 @@ teacher guidance the same way; look there when a pattern here is unclear.
 was made, with the failure it prevents. **Read the relevant section before changing that area, and
 update it in the same change.** Notes below are operating context only.
 
-The version 1 `{poll:"Yes","No"}` syntax was dropped on purpose and legacy compatibility is not
-wanted. `filter/embedpoll/filter.php` is only a `class_alias` shim, and the filter's
-`db/upgrade.php` drops the version 1 tables.
+`filter/embedpoll/filter.php` is only a `class_alias` shim; the filter's code is in
+`classes/text_filter.php`.
 
 ## Commands
 
@@ -122,6 +121,9 @@ Lifecycle code lives in `lib.php` (draft adoption, deleting an activity's polls)
   exist` (activity idnumber, `embedkey`, comma-separated options) or `"local_embedpoll > section
   polls"`. The feature itself puts the matching token into the activity's `intro`, or the section's
   `summary`.
+* **The filter is not switched on when it is installed.** A Behat feature that shows polls on a
+  page needs `the "embedpoll" filter is "on"`, and a PHPUnit test that goes through
+  `format_text()` must call `filter_set_global_state()` itself.
 * `$plugin->supported` is `[405, 405]` in all three. The filter and the editor plugin require
   `local_embedpoll` at 2026101700; raise that when they come to need something newer.
 * Bump `version.php` with every `db/` change, paired with a savepoint in `db/upgrade.php`.

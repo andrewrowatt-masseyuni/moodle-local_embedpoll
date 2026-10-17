@@ -45,16 +45,8 @@ The design follows `local_edguidance`, which embeds teacher guidance the same wa
 
 2. Visit **Site administration > Notifications**, or run `php admin/cli/upgrade.php`.
 
-The filter switches itself on site-wide when it is installed. Without the filter, nobody sees any
-polls. If polls ever disappear everywhere, check that it is still **On** under *Site administration
-> Plugins > Filters > Manage filters*.
-
-### Upgrading from `filter_embedpoll` 1.x
-
-Version 1 recognised typed codes such as `{poll:"Yes","No"}`. That syntax is gone, and upgrading
-`filter_embedpoll` drops its old tables, `filter_embedpoll_poll` and `filter_embedpoll_vote`, along
-with their votes. Any `{poll:…}` code still in the text shows as plain text. Replace it with a poll
-from the editor.
+3. Turn on the **Embed poll** filter in **Site administration > Plugins > Filters > Manage
+   filters**. Until it is on, no poll is shown on any page.
 
 ## Capabilities
 
@@ -75,8 +67,9 @@ one per line, in the order they should appear, then save.
 * Options must be distinct; options that differ only in case count as the same.
 * Each option can be up to 255 characters long.
 
-Tick **Compact** to show the options side by side, on one line, rather than one per line. They
-wrap onto a second line only when they do not fit. Polls are not compact by default.
+Set **Compact** to **Yes** to show the options side by side, on one line, rather than one per line.
+It suits emoji, Yes/No, or other short sets of options. They wrap onto a second line only when they
+do not fit. **Compact** is **No** by default.
 
 A compact poll has no progress bars and no check icons. The chosen option is the tinted button, and
 `aria-pressed` gives the same information to screen readers. Progress bars are left out because
@@ -122,11 +115,10 @@ All that goes into the text is an empty element:
 
 The key is 16 random hex characters. The options and votes live in this plugin's tables.
 
-Because the poll has an identity of its own, independent of its text and position, several
-problems with the old `{poll:…}` design go away:
+Because the poll has an identity of its own, independent of its text and position:
 
-* Rewording an option no longer silently starts a new poll.
-* Moving identical polls no longer swaps their results.
+* Rewording an option does not start a new poll.
+* Moving identical polls does not swap their results.
 * Two polls with the same options in the same text are two separate polls.
 
 Where the filter does not run, the token renders as nothing: TinyMCE pads an empty div with
@@ -161,7 +153,7 @@ A section's key belongs to its course (see *Polls in section summaries*).
 | `sectionid` | The section whose summary holds the poll, with `cmid = 0`. It is 0 for an activity's poll and for a draft, so a draft is `cmid = 0 AND sectionid = 0`. |
 | `embedkey` | Matches the token. Unique per activity, and unique per course among sections and drafts. |
 | `options` | A JSON array of `{id, label}`, in display order. The ids belong to the poll. |
-| `compact` | 1 to show the options side by side, on one line. Set by the form's **Compact** box. |
+| `compact` | 1 to show the options side by side, on one line. Set by the form's **Compact** setting. |
 | `stats` | What each option shows once results are revealed: `percent`, `count` or `none` (`poll::STATS`). |
 
 `local_embedpoll_vote` holds one row per user per poll: `optionid` names the chosen option by its
@@ -186,9 +178,6 @@ single transaction.
 All three use `templates/poll.mustache`, so the results are worked out the same way everywhere.
 
 A student who has not voted never receives the tallies. They are not even sent to the browser.
-
-The poll's look, and its CSS class names (`filter-embedpoll`, `embedpoll-*`), are unchanged from
-version 1.
 
 Polls are read a whole course at a time, and held for the request (`poll::for_course()`). A course
 page can run the filter over a dozen texts, and one query per course keeps that cost flat.
