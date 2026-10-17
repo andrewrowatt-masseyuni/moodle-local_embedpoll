@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_embedpoll';
 $plugin->release = '2.0.0';
-$plugin->version = 2026101702;
+$plugin->version = 2026101800;
 $plugin->requires = 2024100700;
 $plugin->supported = [405, 405];
 $plugin->maturity = MATURITY_BETA;

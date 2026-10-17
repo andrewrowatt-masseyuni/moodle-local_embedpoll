@@ -58,12 +58,34 @@ The design follows `local_edguidance`, which embeds teacher guidance the same wa
 
 All three are defined at the course level, so they can be overridden in a course or an activity.
 
+## Settings
+
+*Site administration > Plugins > Local plugins > Embedded polls*
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| **Maximum number of options** (`maxoptions`) | 7 | The most options a poll can have. It must be 2 or more. |
+
+The limit is checked on the server, not only in the form. A poll that already has more options than
+the limit, because the limit was lowered after it was written, keeps them all and can still be
+saved, but no more can be added to it. Otherwise editing it would mean deleting options, and the
+votes cast for them.
+
+At the limit, the tooltip on **Add option** tells teachers to contact Stream Support. That is the
+`maxoptionsreached` string, which a site can change with the language customisation tool.
+
 ## Usage
 
-In the editor, click the **Poll** button on the toolbar (also under **Insert**). Write the options
-one per line, in the order they should appear, then save.
+In the editor, click the **Poll** button on the toolbar (also under **Insert**). Write each option on
+a line of its own, in the order they should appear, then save.
 
-* A poll needs at least two options.
+* A new poll starts with three lines. **Add option** adds another, and the bin beside a line
+  deletes it. Blank lines are ignored.
+* To reorder the options, drag a line by its handle. From the keyboard, press Enter or Space on the
+  handle, then choose where the line goes.
+* Enter in a line goes to the next line, adding one at the end if there is room.
+* A poll needs at least two options, and can have at most seven, unless the site's limit is
+  different (see *Settings*). At the limit, **Add option** is greyed out, and its tooltip says why.
 * Options must be distinct; options that differ only in case count as the same.
 * Each option can be up to 255 characters long.
 
@@ -184,6 +206,29 @@ page can run the filter over a dozen texts, and one query per course keeps that 
 
 Output depends on who is looking. That is safe because Moodle 4.5 has no text cache: filters run
 per request, per user.
+
+### The poll form
+
+`form\embed_form` is a `core_form` dynamic form, which `tiny_embedpoll` opens in a modal.
+
+**The options are still submitted as text,** one per line, from the form's `options` textarea. So
+validation, saving and `poll::merge_options()` see the options as they always have.
+`amd/src/options_editor.js` hides the textarea, puts a line for each option in its place, and writes
+the lines back into it whenever they change.
+
+* **Lines are moved with core's `sortable_list`**, which also gives keyboard users a dialogue of
+  places to move a line to. Every new `SortableList` listens on the body for the life of the page,
+  so one, which finds its list by selector, serves every form opened on the page.
+* **The JavaScript is required in `render()`, not `definition()`.** The `core_form_dynamic_form`
+  web service builds the form before it starts collecting the JavaScript to send back with it.
+* **"Required" is checked on the server only.** On the client, a failed check would try to focus
+  the hidden textarea, which goes nowhere.
+* **The text starts with a spare newline.** When the form comes back with an error, the browser
+  drops the newline straight after `<textarea>`. Without the spare, a blank first line would be lost,
+  and every option would come back a line higher than it was written.
+* **Enter in a line moves to the next line.** Otherwise it would submit the form.
+* **At the limit, Add option is swapped for a stand-in** with the tooltip, rather than disabled.
+  Bootstrap gives a disabled `.btn-link` `pointer-events: none`, so it would never show a tooltip.
 
 ### The preview in the editor
 
@@ -334,10 +379,16 @@ php admin/tool/behat/cli/run.php --tags=@tiny_embedpoll
   * a duplicated activity.
 * The editor (`tiny_embedpoll`):
   * adding a poll to a chapter and to a new label (adopted from a draft);
+  * the form's lines: adding, deleting and moving them, the limit and its tooltip, and options the
+    server refuses coming back on the lines they were written on;
   * the preview, and a check that it is not saved;
   * editing, with votes following the option text;
   * deleting and moving;
   * a teacher who may not manage polls.
+
+Each line of the form is found by its placeholder: *I set the field "Option 2" to "…"*. A line's
+**Delete option 2** button also matches *"Delete" "button"*, so the form's own **Delete** is found in
+`.modal-footer`.
 
 The preview and its move buttons are in a shadow root, which XPath cannot see into. Use
 `tiny_embedpoll`'s own steps to test them:

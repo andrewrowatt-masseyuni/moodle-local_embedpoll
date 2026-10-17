@@ -175,6 +175,58 @@ final class api_test extends \advanced_testcase {
         $this->assertNotNull(api::label_error(['Yes', 'yes']));
         $this->assertNotNull(api::label_error(['Yes', str_repeat('x', poll::MAXLENGTH + 1)]));
         $this->assertNull(api::label_error(['Yes', str_repeat('é', poll::MAXLENGTH)]));
+        $this->assertNull(api::label_error(['Yes', 'No'], 2));
+        $this->assertNotNull(api::label_error(['Yes', 'No', 'Maybe'], 2));
+    }
+
+    /**
+     * A poll may have as many options as the site allows, or as many as it has already.
+     */
+    public function test_max_options(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $row = $this->getDataGenerator()->get_plugin_generator('local_embedpoll')->create_poll([
+            'cmid' => $page->cmid,
+            'options' => ['A', 'B', 'C', 'D', 'E'],
+        ]);
+
+        $this->assertSame(poll::DEFAULT_MAXOPTIONS, api::max_options());
+
+        set_config('maxoptions', 3, 'local_embedpoll');
+        $this->assertSame(3, api::max_options());
+        $this->assertSame(5, api::max_options($row));
+
+        // Until the setting is saved, after an upgrade, the default applies.
+        unset_config('maxoptions', 'local_embedpoll');
+        $this->assertSame(poll::DEFAULT_MAXOPTIONS, api::max_options());
+    }
+
+    /**
+     * Saving more options than the site allows throws, unless the poll had that many already.
+     */
+    public function test_saving_too_many_options_throws(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $context = \context_module::instance($page->cmid);
+        $row = $this->getDataGenerator()->get_plugin_generator('local_embedpoll')->create_poll([
+            'cmid' => $page->cmid,
+            'options' => ['A', 'B', 'C', 'D', 'E'],
+        ]);
+        set_config('maxoptions', 3, 'local_embedpoll');
+
+        $this->assertSame($row->embedkey, api::save_embed($context, $row->embedkey, ['E', 'D', 'C', 'B', 'A']));
+
+        try {
+            api::save_embed($context, $row->embedkey, ['A', 'B', 'C', 'D', 'E', 'F']);
+            $this->fail('Expected an exception');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('at most 5', $e->getMessage());
+        }
+
+        $this->expectException(\invalid_parameter_exception::class);
+        api::save_embed($context, null, ['A', 'B', 'C', 'D']);
     }
 
     /**

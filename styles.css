@@ -64,3 +64,34 @@ p:empty:has(+ .filter-embedpoll),
 .filter-embedpoll + p:empty {
     display: none;
 }
+
+/* The lines the poll form's options are written in. */
+.local-embedpoll-options {
+    .local-embedpoll-draghandle [data-drag-type="move"] {
+        cursor: move;
+    }
+
+    /*
+     * Stands in for "Add option" once the poll has as many lines as it may have options. It looks
+     * disabled without the .disabled class, which on a .btn-link turns off pointer events, and with
+     * them the tooltip that says why. The colour is Bootstrap's for a disabled .btn-link.
+     */
+    .btn[data-region="local_embedpoll-maxoptions"],
+    .btn[data-region="local_embedpoll-maxoptions"]:hover {
+        color: var(--gray, #6a737b);
+        text-decoration: none;
+        cursor: default;
+    }
+
+    /* The line being moved, where it would land. */
+    .sortable-list-current-position {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* The copy that follows the pointer. Being fixed, it would otherwise shrink to its content. */
+    .sortable-list-is-dragged {
+        width: 24rem;
+        max-width: 90vw;
+        opacity: 0.85;
+    }
+}

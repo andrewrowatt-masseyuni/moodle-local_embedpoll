@@ -115,14 +115,37 @@ class api {
     }
 
     /**
+     * The most options a poll may have.
+     *
+     * That is the site's maxoptions setting. A poll that already has more options than that, from
+     * before the setting was lowered, may keep them all, so that editing it never forces a teacher
+     * to discard options, and the votes cast for them.
+     *
+     * @param \stdClass|null $row The poll being edited, if any.
+     * @return int
+     */
+    public static function max_options(?\stdClass $row = null): int {
+        $setting = get_config('local_embedpoll', 'maxoptions');
+        $max = $setting === false ? poll::DEFAULT_MAXOPTIONS : max(poll::MINOPTIONS, (int)$setting);
+
+        return $row ? max($max, count(poll::options($row))) : $max;
+    }
+
+    /**
      * What is wrong with a poll's labels, if anything.
      *
      * @param string[] $labels Trimmed, non-blank labels (see poll::labels_from_text()).
+     * @param int|null $max The most options allowed (see max_options()), or null for the site's setting.
      * @return string|null A message saying what is wrong, or null if nothing is.
      */
-    public static function label_error(array $labels): ?string {
+    public static function label_error(array $labels, ?int $max = null): ?string {
         if (count($labels) < poll::MINOPTIONS) {
             return get_string('optionsmin', 'local_embedpoll', poll::MINOPTIONS);
+        }
+
+        $max = $max ?? self::max_options();
+        if (count($labels) > $max) {
+            return get_string('optionsmax', 'local_embedpoll', $max);
         }
 
         $seen = [];
@@ -174,20 +197,21 @@ class api {
     ): string {
         global $DB;
 
+        [$courseid, $cmid, $sectionid] = self::embed_target($context, $sectionid);
+        $row = ($key !== null && $key !== '') ? self::get_embed($context, $key, $sectionid) : null;
+
         $labels = array_values($labels);
-        if ($error = self::label_error($labels)) {
+        if ($error = self::label_error($labels, self::max_options($row))) {
             throw new \invalid_parameter_exception($error);
         }
         if (!in_array($stats, poll::STATS, true)) {
             throw new \invalid_parameter_exception('Unknown stats setting.');
         }
 
-        [$courseid, $cmid, $sectionid] = self::embed_target($context, $sectionid);
         $now = time();
 
         $transaction = $DB->start_delegated_transaction();
 
-        $row = ($key !== null && $key !== '') ? self::get_embed($context, $key, $sectionid) : null;
         if (!$row) {
             $row = (object)[
                 'courseid' => $courseid,

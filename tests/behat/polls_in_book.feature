@@ -5,7 +5,8 @@ Feature: Polls in a book and a section summary
   I need polls embedded in them to show and run
 
   Background:
-    Given the following "courses" exist:
+    Given the "embedpoll" filter is "on"
+    And the following "courses" exist:
       | shortname | fullname |
       | C1        | Course 1 |
     And the following "users" exist:

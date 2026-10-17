@@ -131,23 +131,25 @@ final class embed_form_test extends \advanced_testcase {
     }
 
     /**
-     * "Compact" starts unticked; ticked, it saves the poll as compact, and the poll reopens with
-     * it ticked.
+     * "Compact" starts at No; set to Yes, it saves the poll as compact, and the poll reopens with
+     * Yes chosen.
      */
     public function test_compact(): void {
         global $DB;
 
         $this->resetAfterTest();
         [, $context] = $this->setup_book();
-        $ticked = '~<input(?=[^>]*name="compact")(?=[^>]*type="checkbox")(?=[^>]*checked)[^>]*>~';
+        // The option chosen in the "compact" select, and not in any other.
+        $chosen = fn(int $value): string => '~<select[^>]*name="compact"[^>]*>(?:(?!</select>).)*'
+            . '<option(?=[^>]*value="' . $value . '")(?=[^>]*selected)~s';
 
-        $this->assertDoesNotMatchRegularExpression($ticked, $this->open(['contextid' => $context->id]));
+        $this->assertMatchesRegularExpression($chosen(0), $this->open(['contextid' => $context->id]));
 
         $result = $this->submit(['contextid' => $context->id, 'key' => '', 'options' => "Yes\nNo", 'compact' => 1]);
 
         $key = json_decode($result['data'])->key;
         $this->assertSame(1, (int)$DB->get_field('local_embedpoll', 'compact', ['embedkey' => $key]));
-        $this->assertMatchesRegularExpression($ticked, $this->open(['contextid' => $context->id, 'key' => $key]));
+        $this->assertMatchesRegularExpression($chosen(1), $this->open(['contextid' => $context->id, 'key' => $key]));
     }
 
     /**
@@ -164,6 +166,46 @@ final class embed_form_test extends \advanced_testcase {
             $this->assertFalse($result['submitted'], $options);
         }
         $this->assertSame(0, $DB->count_records('local_embedpoll'));
+    }
+
+    /**
+     * More options than the site allows are refused, unless the poll had that many already.
+     */
+    public function test_too_many_options_are_refused(): void {
+        $this->resetAfterTest();
+        [, $context] = $this->setup_book();
+        $row = $this->getDataGenerator()->get_plugin_generator('local_embedpoll')->create_poll([
+            'cmid' => $context->instanceid,
+            'options' => ['A', 'B', 'C', 'D', 'E'],
+        ]);
+        set_config('maxoptions', 3, 'local_embedpoll');
+
+        $this->assertFalse($this->submit(['contextid' => $context->id, 'key' => '', 'options' => "A\nB\nC\nD"])['submitted']);
+        $this->assertTrue($this->submit(['contextid' => $context->id, 'key' => '', 'options' => "A\nB\nC"])['submitted']);
+
+        $edit = ['contextid' => $context->id, 'key' => $row->embedkey];
+        $this->assertTrue($this->submit($edit + ['options' => "E\nD\nC\nB\nA"])['submitted']);
+        $this->assertFalse($this->submit($edit + ['options' => "A\nB\nC\nD\nE\nF"])['submitted']);
+    }
+
+    /**
+     * The lines that replace the options textarea are told how many options the poll may have.
+     */
+    public function test_lines_are_told_the_most_options(): void {
+        $this->resetAfterTest();
+        [, $context] = $this->setup_book();
+        $row = $this->getDataGenerator()->get_plugin_generator('local_embedpoll')->create_poll([
+            'cmid' => $context->instanceid,
+            'options' => ['A', 'B', 'C', 'D', 'E'],
+        ]);
+        $init = fn(int $max): string => '~local_embedpoll/options_editor.*\.init\("local_embedpoll_options\w+", ' . $max . '\)~s';
+        $open = fn(array $args): string => dynamic_form::execute(embed_form::class, $this->query($args))['javascript'];
+
+        $this->assertMatchesRegularExpression($init(poll::DEFAULT_MAXOPTIONS), $open(['contextid' => $context->id]));
+
+        set_config('maxoptions', 3, 'local_embedpoll');
+        $this->assertMatchesRegularExpression($init(3), $open(['contextid' => $context->id]));
+        $this->assertMatchesRegularExpression($init(5), $open(['contextid' => $context->id, 'key' => $row->embedkey]));
     }
 
     /**

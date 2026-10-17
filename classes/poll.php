@@ -48,6 +48,9 @@ class poll {
     /** @var int The fewest options a poll may have. */
     public const MINOPTIONS = 2;
 
+    /** @var int The most options a poll may have, until the site's maxoptions setting is saved. */
+    public const DEFAULT_MAXOPTIONS = 7;
+
     /** @var int The longest an option's label may be, in characters. */
     public const MAXLENGTH = 255;
 

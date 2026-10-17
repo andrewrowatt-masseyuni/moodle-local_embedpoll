@@ -25,16 +25,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['addoption'] = 'Add option';
 $string['compact'] = 'Compact';
-$string['compact_inlinehelp'] = 'Show the options side by side, on one line';
+$string['compact_inlinehelp'] = 'Show the options side by side, on one line. Best for emoji, Yes/No, or other short sets of options.';
+$string['deleteoption'] = 'Delete option {$a}';
 $string['embedpoll:manage'] = 'Add and edit embedded polls';
 $string['embedpoll:viewresults'] = 'Always view embedded poll results';
 $string['embedpoll:vote'] = 'Vote in an embedded poll';
 $string['error_invalidchoice'] = 'The selected option is not valid for this poll.';
+$string['maxoptions'] = 'Maximum number of options';
+$string['maxoptions_desc'] = 'The most options a poll can have. It must be 2 or more. A poll that already has more options than this keeps them, but no more can be added to it.';
+$string['maxoptionsreached'] = 'You have reached the current maximum number of options. Contact Stream Support if you need additional options.';
+$string['moveoption'] = 'Move option {$a}';
 $string['novotesyet'] = 'No votes yet';
+$string['optionn'] = 'Option {$a}';
 $string['options'] = 'Options';
 $string['options_inlinehelp'] = 'One option per line, in the order they should appear. At least two.';
 $string['optionsduplicate'] = 'The option "{$a}" appears more than once.';
+$string['optionsmax'] = 'A poll can have at most {$a} options.';
 $string['optionsmin'] = 'A poll needs at least {$a} options.';
 $string['optionstoolong'] = 'Each option can be at most {$a->max} characters long: "{$a->option}" is longer.';
 $string['pluginname'] = 'Embedded polls';
@@ -49,6 +57,7 @@ $string['privacy:metadata:local_embedpoll_vote:userid'] = 'The user who voted.';
 $string['resultshiddenhint'] = 'Select an option to vote and see the results.';
 $string['stats'] = 'Results for each option';
 $string['stats_count'] = 'Number of votes';
+$string['stats_inlinehelp'] = 'Control how poll statistics are displayed.';
 $string['stats_none'] = 'Nothing';
 $string['stats_percent'] = 'Percentage';
 $string['task:purgedrafts'] = 'Delete abandoned poll drafts';

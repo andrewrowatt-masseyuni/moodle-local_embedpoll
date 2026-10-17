@@ -25,10 +25,11 @@ use local_embedpoll\poll;
  *
  * Opened by tiny_embedpoll in a modal, to add a poll or to edit one already in the text.
  *
- * The options are written one per line. An option keeps its votes for as long as its text is
+ * Each option has a line of its own. Lines can be added, up to api::max_options(), deleted, and
+ * dragged into order. An option keeps its votes for as long as its text is
  * unchanged, wherever it moves to; rewording or removing an option discards the votes cast for it.
- * A poll that already has votes opens with a notice saying so. Ticking "Compact" shows the options
- * side by side, on one line, rather than one per line. "Results for each option" picks what each
+ * A poll that already has votes opens with a notice saying so. Setting "Compact" to Yes shows the
+ * options side by side, on one line, rather than one per line. "Results for each option" picks what each
  * option shows once results are revealed: its percentage, its number of votes, or nothing.
  *
  * Arguments: contextid (the editor's context), and optionally sectionid (the section whose summary
@@ -41,6 +42,9 @@ use local_embedpoll\poll;
 class embed_form extends dynamic_form {
     /** @var \stdClass|null|false The poll being edited, null for none, or false before it is looked up. */
     protected $row = false;
+
+    /** @var string Marks the options textarea, for local_embedpoll/options_editor to find. */
+    protected $editorid = '';
 
     /**
      * The editor's context: an activity, or the course for a section summary or while an activity
@@ -122,30 +126,72 @@ class embed_form extends dynamic_form {
             ));
         }
 
-        // The help is written under the label rather than behind a help button, so it is read
-        // without a click. Behat therefore finds the field by its name, "options".
-        $label = get_string('options', 'local_embedpoll') . \html_writer::span(
-            get_string('options_inlinehelp', 'local_embedpoll'),
-            'd-block small text-muted font-weight-normal mb-1'
+        $label = $this->label_with_help(
+            get_string('options', 'local_embedpoll'),
+            get_string('options_inlinehelp', 'local_embedpoll')
         );
-        $mform->addElement('textarea', 'options', $label, ['rows' => 8, 'cols' => 50]);
+        // The options are still submitted as text, one per line, but nobody sees this textarea:
+        // local_embedpoll/options_editor puts a line for each option in its place (see render()),
+        // and keeps the text in step with them.
+        $this->editorid = \html_writer::random_id('local_embedpoll_options');
+        $mform->addElement('textarea', 'options', $label, [
+            'hidden' => 'hidden',
+            'data-local-embedpoll-options' => $this->editorid,
+        ]);
         $mform->setType('options', PARAM_TEXT);
-        $mform->addRule('options', null, 'required', null, 'client');
+        // Checked on the server only. On the client, a failed check would focus the hidden textarea.
+        $mform->addRule('options', null, 'required');
 
-        $mform->addElement(
-            'advcheckbox',
-            'compact',
+        $label = $this->label_with_help(
             get_string('compact', 'local_embedpoll'),
             get_string('compact_inlinehelp', 'local_embedpoll')
         );
+        $mform->addElement('selectyesno', 'compact', $label);
         $mform->setDefault('compact', 0);
 
         $stats = [];
         foreach (poll::STATS as $value) {
             $stats[$value] = get_string('stats_' . $value, 'local_embedpoll');
         }
-        $mform->addElement('select', 'stats', get_string('stats', 'local_embedpoll'), $stats);
+        $label = $this->label_with_help(
+            get_string('stats', 'local_embedpoll'),
+            get_string('stats_inlinehelp', 'local_embedpoll')
+        );
+        $mform->addElement('select', 'stats', $label, $stats);
         $mform->setDefault('stats', poll::STATS_PERCENT);
+    }
+
+    /**
+     * Render the form, with the lines that take the place of its options textarea.
+     *
+     * The lines are set up here rather than in definition(), because core_form's web service
+     * builds the form before it starts collecting the JavaScript to send back with it.
+     *
+     * @return string
+     */
+    public function render() {
+        global $PAGE;
+
+        $PAGE->requires->js_call_amd('local_embedpoll/options_editor', 'init', [
+            $this->editorid,
+            api::max_options($this->get_row()),
+        ]);
+
+        return parent::render();
+    }
+
+    /**
+     * A field's label, with its help written under it.
+     *
+     * The help is under the label rather than behind a help button, so it is read without a
+     * click. Behat therefore finds such a field by its name, not its label.
+     *
+     * @param string $label The label.
+     * @param string $help The help.
+     * @return string
+     */
+    protected function label_with_help(string $label, string $help): string {
+        return $label . \html_writer::span($help, 'd-block small text-muted font-weight-normal mb-1');
     }
 
     /**
@@ -158,7 +204,10 @@ class embed_form extends dynamic_form {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        $error = api::label_error(poll::labels_from_text((string)($data['options'] ?? '')));
+        $error = api::label_error(
+            poll::labels_from_text((string)($data['options'] ?? '')),
+            api::max_options($this->get_row())
+        );
         if ($error !== null) {
             $errors['options'] = $error;
         }

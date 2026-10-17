@@ -66,8 +66,9 @@ plugin's `.vscode/tasks.json` holds the same tasks for that plugin. CI also runs
 The README has the detail. This is the map:
 
 * **Adding or editing:** `tiny_embedpoll/ui` opens `local_embedpoll\form\embed_form` with
-  `core_form/modalform`. `api::save_embed()` returns a key, and the editor writes only
-  `token::html($key)` into the text.
+  `core_form/modalform`. `amd/src/options_editor.js` replaces the form's `options` textarea with a
+  line per option. `api::save_embed()` returns a key, and the editor writes only `token::html($key)`
+  into the text.
 * **Showing:** `filter_embedpoll\text_filter` resolves each key through `poll::for_cm()` (in a
   module context) or `poll::for_sections()` (in a course context), then calls
   `output\widget::render_row()`.
@@ -111,6 +112,14 @@ Lifecycle code lives in `lib.php` (draft adoption, deleting an activity's polls)
   page needs both.
 * **`api::adopt_drafts()` reads every string field of the activity's own record**, not just
   `intro`, because a page's content is on the same form as its description.
+* **The form's `options` field is a hidden textarea.** `options_editor.js` draws the lines and
+  writes them back into it, so the server still gets text, one option per line. Its JavaScript is
+  required in `embed_form::render()`, because `definition()` runs before the web service collects
+  any. In Behat, set a line by its placeholder (`I set the field "Option 2" to "…"`), never the field
+  "options". Each line's "Delete option N" button also matches `"Delete" "button"`.
+* **The limit on options is `api::max_options($row)`**, never the `maxoptions` setting read
+  directly. It lets a poll keep more options than the setting allows if it already had them, and
+  the form, the lines and `save_embed()` must all agree on it.
 * **Polls are cached per request.** Call `poll::reset_cache()` after any write, as `api` and the
   test generator do. Tests also call it in `setUp()`.
 * **`SITEID` is a string.** Compare it as `(int)SITEID`; a strict comparison with an int never

@@ -5,7 +5,8 @@ Feature: Polls in a text and media area
   I need polls embedded in a text and media area to show and run on the course page
 
   Background:
-    Given the following "courses" exist:
+    Given the "embedpoll" filter is "on"
+    And the following "courses" exist:
       | shortname | fullname |
       | C1        | Course 1 |
     And the following "users" exist:
