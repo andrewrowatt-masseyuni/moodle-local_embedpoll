@@ -22,7 +22,8 @@
 
     A compact poll puts its options side by side, on one line, wrapping only when they do not fit.
     It has no progress bars and no check icons: the chosen option is the tinted button, and
-    aria-pressed says so to assistive technology.
+    aria-pressed says so to assistive technology. Its buttons are styled by this plugin alone, not
+    by Bootstrap's .btn, so that a theme's button styles do not change them.
 
     Once results are revealed, each option shows its percentage (showpercent), its number of votes
     (showcount), or neither, as the poll's stats setting says. Neither affects the progress bars or
@@ -59,7 +60,7 @@
     <div class="d-flex flex-wrap embedpoll-options" role="group" aria-label="{{#str}}polloptions, local_embedpoll{{/str}}">
         {{#items}}
         <button type="button"
-                class="btn embedpoll-option{{#selected}} embedpoll-selected{{/selected}}"
+                class="embedpoll-option{{#selected}} embedpoll-selected{{/selected}}"
                 data-action="poll-vote"
                 data-optionid="{{optionid}}"
                 aria-pressed="{{#selected}}true{{/selected}}{{^selected}}false{{/selected}}"

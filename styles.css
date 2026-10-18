@@ -30,6 +30,10 @@ div.embedpoll-embed[data-embedpoll] {
         font-weight: 400;
     }
 
+    .embedpoll-option-stat {
+        font-size: 80%;
+    }
+
     .embedpoll-progress {
         height: 0.2rem;
         background-color: rgba(0, 0, 0, 0.08);
@@ -41,9 +45,37 @@ div.embedpoll-embed[data-embedpoll] {
             gap: 0.5rem;
         }
 
+        /*
+         * Every style a button needs, rather than Bootstrap's .btn, which themes restyle. The sizes
+         * are Boost's for .btn.
+         */
         .embedpoll-option {
+            display: inline-block;
+            margin: 0;
+            padding: 0.375rem 0.75rem;
             border: 1px solid rgba(0, 0, 0, 0.125);
-            font-size: inherit;
+            border-radius: 0.5rem;
+            color: inherit;
+            font: inherit;
+            line-height: 1.5;
+            text-align: center;
+            text-transform: none;
+            vertical-align: middle;
+            user-select: none;
+            transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+
+        .embedpoll-option:focus {
+            outline: 0;
+        }
+
+        /* Only from the keyboard, so a click does not leave a ring on the chosen option. */
+        .embedpoll-option:focus-visible {
+            box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--primary, #0f6cbf) 75%, transparent);
         }
 
         .embedpoll-option:not([disabled]):not(.embedpoll-selected):hover {

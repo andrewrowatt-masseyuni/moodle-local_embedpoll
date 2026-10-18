@@ -111,6 +111,10 @@ cannot be voted in there.
   same, without asking. Until the text is saved, undo brings it back.
 * **To move a poll**, hover over it and use the up and down arrows at its bottom right. Each click
   moves it past one paragraph or other block.
+* **To write above or after a poll**, hover over it and use **Insert space above poll** or
+  **Insert space after poll**, beside the arrows. Each adds an empty paragraph there, with the
+  cursor in it. The cursor cannot go into a poll, so without them a poll at the start or end of the
+  text, or next to another poll, would leave nowhere to type on that side of it.
 
 A teacher without `manage` (a non-editing teacher, by default) sees polls in the editor, but cannot
 open, move or change them. Their button is disabled.
@@ -269,8 +273,8 @@ faces are also copied onto the editor's document, for the option icons.
 **Interaction**
 
 Nothing in the preview takes the pointer. A click lands on the token itself, which opens the form
-for someone who may manage polls. The "Click to edit" hint and the move arrows sit in the same
-shadow root, so they are never saved either. They appear only while the poll is hovered, so that
+for someone who may manage polls. The "Click to edit" hint, the move arrows and the insert space
+buttons sit in the same shadow root, so they are never saved either. They appear only while the poll is hovered, so that
 otherwise the preview looks exactly as the page will.
 
 ### Drafts
@@ -390,13 +394,16 @@ Each line of the form is found by its placeholder: *I set the field "Option 2" t
 **Delete option 2** button also matches *"Delete" "button"*, so the form's own **Delete** is found in
 `.modal-footer`.
 
-The preview and its move buttons are in a shadow root, which XPath cannot see into. Use
+The preview and its buttons are in a shadow root, which XPath cannot see into. Use
 `tiny_embedpoll`'s own steps to test them:
 
 * *the "Content" TinyMCE editor should preview a poll with "…"*
 * *… should not save "…"*
 * *I click on the poll with "…" in the "Content" TinyMCE editor*
 * *I move the poll "up" in the "Content" TinyMCE editor*
+* *I insert space "above" the poll in the "Content" TinyMCE editor*, then *I type "…" in the
+  "Content" TinyMCE editor*. Core's *I type "…"* loses its keys after the editor takes focus from
+  script, as these buttons give it.
 
 ## License
 
